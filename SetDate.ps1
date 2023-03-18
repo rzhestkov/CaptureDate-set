@@ -1,5 +1,6 @@
 #Поиск файлов с картинками в порядке сортировки по именам
-#Установка параметров съемки последовательно на дату в прошлом
+#Установка параметров съемки последовательно, начиная с какой-то даты и какого-то времени
+#От начального времени может прибавлять по 1 минуте или по 5 секунд
 #------------------------------------------------------------------
 #Функции
 #------------------------------------------------------------------
@@ -17,7 +18,7 @@ $newCaptureDate="2004:05:15"
 $startCaptureHour=12 # нужно чтобы конечный час не стал больше 23
 $startCaptureMin=1 # от 1 до 58
 $startCaptureSec=5 # от 1 до 58. 5 - оптимальное значение
-$SecAcuracy=1 # если "0", то прибаляет по минуте, если "1", то по 5 секунд
+$SecAcuracy=1 # если "0", то прибавляет по минуте, если "1", то по 5 секунд
 $OverwriteOriginal=0 # если "0", то оригинальные файлы будут сохранены рядом, с расширением вида "jpg_original", если не ноль, то оригинальные файлы будут перезаписаны
 #------------------------------------------------------------------
 
@@ -68,13 +69,10 @@ foreach ($FileSpec in $FileList) {
     } elseif ($SecAcuracy -eq 1) { # прибавляем по 5 секунд к дате съемки у каждого нового файла
         $newCaptureSec=($startCaptureSec+($numOfFiles-1)*5)-[math]::Floor(($startCaptureSec+($numOfFiles-1)*5)/60)*60
         $newCaptureSec=([String]$newCaptureSec).PadLeft(2, '0') #добавление ведущего нуля
-
         $newCaptureMin=$startCaptureMin+[math]::Floor(($numOfFiles-1)*5/60+0.00001) # здесь 0.00001 - это костыль, чтобы правильнее работало округление
         $newCaptureMin=([String]$newCaptureMin).PadLeft(2, '0') #добавление ведущего нуля
-
         $newCaptureHour=$startCaptureHour+[math]::Floor(($numOfFiles-1)*5/3600+0.00001)
         $newCaptureHour=([String]$newCaptureHour).PadLeft(2, '0') #добавление ведущего нуля
-
         $commandString='-AllDates="'+$newCaptureDate+' '+$newCaptureHour+':'+$newCaptureMin+':'+$newCaptureSec+'" '
     }
     # доработка строки с параметрами
@@ -86,7 +84,7 @@ foreach ($FileSpec in $FileList) {
     write-host ' set parameter: '$commandString
     # пример    -AllDates="1998:02:01 12:01:00"' IMG_199802.01.psd  
     #------------------------------------------------------------------
-    #здесь вся происходит изменение файла
+    #здесь происходит изменение файла
     #------------------------------------------------------------------
     Start-Process -FilePath  .\exiftool.exe  -ArgumentList $commandString -Wait -NoNewWindow
 
